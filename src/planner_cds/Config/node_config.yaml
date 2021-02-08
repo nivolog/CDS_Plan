@@ -1,0 +1,6 @@
+{
+  odom_topic: "odometry",
+  task_topic: "set_goal",
+  grid_topic: "occupancy",
+  path_topic: "path"
+}
