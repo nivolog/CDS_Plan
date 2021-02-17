@@ -8,6 +8,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <cds_msgs/PathStamped.h>
+#include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Odometry.h>
 
 #include "planner_cds_core/mission.h"
@@ -46,7 +47,8 @@ private:
     std::string searchType;
 
     bool gridSet;
-    cds_msgs::PathStamped path;
+//    cds_msgs::PathStamped path;
+    geometry_msgs::PoseArray path;
 public:
     Planner(tf2_ros::Buffer& _tfBuffer);
     void setTask(const geometry_msgs::PoseStamped::ConstPtr& goalMsg);
@@ -55,7 +57,9 @@ public:
 
     bool plan();
     void fillPath(std::list<Node> lppath);
+    void fillPath1(std::list<Node> lppath);
     void transformPath();
+    void transformPath1();
     void publish();
     geometry_msgs::Pose transformPoseToTargetFrame(geometry_msgs::Pose poseIn, std::string poseFrame, std::string targetFrame);
     geometry_msgs::Pose rescaleToGrid(geometry_msgs::Pose Pose);
@@ -89,7 +93,10 @@ Planner::Planner(tf2_ros::Buffer& _tfBuffer): tfBuffer(_tfBuffer){
                                                                                 &Planner::setOdom,
                                                                                 this);
 
-    trajPub                     = nh.advertise<cds_msgs::PathStamped>           (pathTopic,
+//    trajPub                     = nh.advertise<cds_msgs::PathStamped>           (pathTopic,
+//                                                                                50);
+
+    trajPub                     = nh.advertise<geometry_msgs::PoseArray>        (pathTopic,
                                                                                 50);
 
 
@@ -142,8 +149,8 @@ bool Planner::plan(){
 
     auto lppath = mission.getLPPath();
     if (lppath.size() != 0){
-        fillPath(lppath);
-        transformPath();
+        fillPath1(lppath);
+        transformPath1();
         return true;
     }
     else{
@@ -152,17 +159,62 @@ bool Planner::plan(){
 }
 
 void Planner::fillPath(std::list<Node> lppath){
-    path.points.clear();
+//    path.points.clear();
+//    path.header.frame_id = grid.header.frame_id;
+//    cds_msgs::Point point;
+//    for (auto node : lppath){
+//        point.pose.position.x = node.i;
+//        point.pose.position.y = node.j;
+//        path.points.push_back(point);
+//    }
+}
+void Planner::fillPath1(std::list<Node> lppath){
+    path.poses.clear();
     path.header.frame_id = grid.header.frame_id;
-    cds_msgs::Point point;
+    geometry_msgs::Pose point;
     for (auto node : lppath){
-        point.pose.position.x = node.i;
-        point.pose.position.y = node.j;
-        path.points.push_back(point);
+        point.position.x = node.i;
+        point.position.y = node.j;
+        path.poses.push_back(point);
     }
 }
 
 void Planner::transformPath(){
+//    geometry_msgs::TransformStamped transform;
+//    std::string pathFrame = path.header.frame_id;
+//    try {
+//        transform = tfBuffer.lookupTransform(pathFrame, odom.header.frame_id, ros::Time(0));
+//    }catch (tf2::TransformException &ex) {
+//        ROS_WARN("%s", ex.what());
+//        //return poseIn;
+//    }
+//    auto angle = yaw(transform.transform.rotation);
+//    double angle_orig;
+//    geometry_msgs::Pose point;
+//    for(int i=0; i<path.points.size(); ++i) {
+//        point = path.points[i].pose;
+//        point = rescaleFromGrid(point);
+//        point.position.x += grid.info.origin.position.x;
+//        point.position.y += grid.info.origin.position.y;
+//
+//        angle_orig = yaw(point.orientation);
+//        angle_orig -= angle;
+//        point.orientation.x = 0;
+//        point.orientation.y = 0;
+//        point.orientation.z = sin(angle_orig / 2);
+//        point.orientation.w = cos(angle_orig / 2);
+//
+//        path.points[i].pose = point;
+//    }
+//    //!For some reason it did not work as expected:
+////        path.path_with_metadata[i].pose = transformPoseToTargetFrame(point, pathFrame, targetFrame);
+//
+//
+//    reverse(path.points.begin(), path.points.end());
+//    path.header.frame_id = odom.header.frame_id;
+}
+
+void Planner::transformPath1(){
     geometry_msgs::TransformStamped transform;
     std::string pathFrame = path.header.frame_id;
     try {
@@ -174,8 +226,8 @@ void Planner::transformPath(){
     auto angle = yaw(transform.transform.rotation);
     double angle_orig;
     geometry_msgs::Pose point;
-    for(int i=0; i<path.points.size(); ++i) {
-        point = path.points[i].pose;
+    for(int i=0; i<path.poses.size(); ++i) {
+        point = path.poses[i];
         point = rescaleFromGrid(point);
         point.position.x += grid.info.origin.position.x;
         point.position.y += grid.info.origin.position.y;
@@ -187,13 +239,13 @@ void Planner::transformPath(){
         point.orientation.z = sin(angle_orig / 2);
         point.orientation.w = cos(angle_orig / 2);
 
-        path.points[i].pose = point;
+        path.poses[i] = point;
     }
     //!For some reason it did not work as expected:
 //        path.path_with_metadata[i].pose = transformPoseToTargetFrame(point, pathFrame, targetFrame);
 
 
-    reverse(path.points.begin(), path.points.end());
+    reverse(path.poses.begin(), path.poses.end());
     path.header.frame_id = odom.header.frame_id;
 }
 

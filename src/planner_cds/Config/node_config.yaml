@@ -1,6 +1,7 @@
 {
-  odom_topic: "odometry",
+  odom_topic: "OpenVSLAM",
   task_topic: "set_goal",
   grid_topic: "occupancy",
-  path_topic: "path"
+  path_topic: "path",
+  search_type: "dijkstra"
 }
