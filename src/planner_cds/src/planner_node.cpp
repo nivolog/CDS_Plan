@@ -125,7 +125,7 @@ Planner::Planner(tf2_ros::Buffer& _tfBuffer): tfBuffer(_tfBuffer){
                                                                                 &Planner::setGrid,
                                                                                 this);
 
-    replanSub                   = nh.subscribe<std_msgs::Bool>                 ("Replan",
+    replanSub                   = nh.subscribe<std_msgs::Bool>                 ("replan",
                                                                                  50,
                                                                                  &Planner::needReplan,
                                                                                  this);
