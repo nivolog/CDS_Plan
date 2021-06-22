@@ -1,7 +1,14 @@
 {
-  odom_topic: "OpenVSLAM",
-  task_topic: "set_goal",
-  grid_topic: "occupancy",
-  path_topic: "path",
-  search_type: "dijkstra"
+  task_topic: "move_base_simple/goal",
+  grid_topic: "grid",
+  path_topic: "trajectory",
+  path_topic_vis: "path_visualization",
+  search_type: "theta",
+  global_frame: "map",
+  base_frame: "base_link"
 }
+#Available planners are:  "bfs" - BFS
+#                         "dijkstra" - Dijkstra
+#                         "astar" - A*
+#                         "jp_search" - JP (JumpPoint)
+#                         "theta" - Theta*

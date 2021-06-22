@@ -26,6 +26,10 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
+    open.clear();
+    close.clear();
+    lppath.clear();
+    hppath.clear();
     open.resize(map.height);
     Node curNode;
     curNode.i = map.start_i;
@@ -163,6 +167,7 @@ void ISearch::makeSecondaryPath()
 
 void ISearch::addOpen(Node newNode)
 {
+
     std::list<Node>::iterator iter, pos;
 
     if (open[newNode.i].size() == 0) {
